@@ -1,113 +1,64 @@
 #include "binary_trees.h"
 
-/**
- * struct node_s - singly linked list
- * @node: const binary tree node
- * @next: points to the next node
- */
-typedef struct node_s
-{
-	const binary_tree_t *node;
-	struct node_s *next;
-} ll;
+void level_helper(const binary_tree_t *tree, void (*func)(int), int level);
+size_t binary_tree_height(const binary_tree_t *tree);
+ /**
+  * binary_tree_levelorder - goes through a binary tree
+  * using level-order traversal
+  * @tree: pointer to the root node of the tree to traverse
+  * @func: pointer to a function to call for each node
+  * Return: nothing
+  */
 
-ll *append(ll *head, const binary_tree_t *btnode);
-void free_list(ll *head);
-ll *get_children(ll *head, const binary_tree_t *parent);
-void levels_rec(ll *head, void (*func)(int));
-
-/**
- * binary_tree_levelorder - Goes through a binary tree
- *                          using level-order traversal.
- * @tree: Pointer to the root node of the tree to traverse.
- * @func: Pointer to a function to call for each node.
- */
 void binary_tree_levelorder(const binary_tree_t *tree, void (*func)(int))
 {
-	ll *children = NULL;
+	size_t level;
 
-	func(tree->n);
-	children = get_children(children, tree);
-	levels_rec(children, func);
-
-	free_list(children);
-}
-
-/**
- * levels_rec - Calls func on all nodes at each level.
- * @head: Pointer to head of linked list with nodes at one level.
- * @func: Pointer to a function to call for each node.
- */
-void levels_rec(ll *head, void (*func)(int))
-{
-	ll *children = NULL, *curr = NULL;
-
-	if (!head)
+	if (tree == NULL || func == NULL)
 		return;
-	for (curr = head; curr != NULL; curr = curr->next)
+	for (level = 0; level < binary_tree_height(tree); level++)
 	{
-		func(curr->node->n);
-		children = get_children(children, curr->node);
+		level_helper(tree, func, level);
 	}
-	levels_rec(children, func);
-	free_list(children);
 }
 
-/**
- * get_children - appends children of parent to linked list.
- * @head: Pointer to head of linked list where children will be appended.
- * @parent: Pointer to node whose children we want to append.
- * Return: Pointer to head of linked list of children.
- */
-ll *get_children(ll *head, const binary_tree_t *parent)
+ /**
+  * level_helper - level order traversal
+  * @tree: pointer to the root node of the tree to traverse
+  * @func: pointer to a function to call for each node
+  * @level: level in the tree
+  * Return: nothing
+  */
+
+void level_helper(const binary_tree_t *tree, void (*func)(int), int level)
 {
-	if (parent->left)
-		head = append(head, parent->left);
-	if (parent->right)
-		head = append(head, parent->right);
-	return (head);
+	if (tree == NULL || func == NULL)
+		return;
+	if (level == 0)
+		func(tree->n);
+	else if (level > 0)
+	{
+		level_helper(tree->left, func, level - 1);
+		level_helper(tree->right, func, level - 1);
+	}
 }
 
-/**
- * append - adds a new node at the end of a linkedlist
- * @head: pointer to head of linked list
- * @btnode: const binary tree node to append
- * Return: pointer to head, or NULL on failure
- */
-ll *append(ll *head, const binary_tree_t *btnode)
+ /**
+  * binary_tree_height - a function that measures the height of a binary tree
+  * @tree: a pointer to the root node of the tree to measure the height
+  * Return: The height of the binary tree, otherwise 0
+  */
+
+size_t binary_tree_height(const binary_tree_t *tree)
 {
-	ll *new = NULL, *last = NULL;
+	size_t left_height, right_height;
 
-	new = malloc(sizeof(*new));
-	if (new)
-	{
-		new->node = btnode;
-		new->next = NULL;
-		if (!head)
-			head = new;
-		else
-		{
-			last = head;
-			while (last->next)
-				last = last->next;
-			last->next = new;
-		}
-	}
-	return (head);
-}
-
-/**
- * free_list - frees all the nodes in a linked list
- * @head: pointer to the head of list_t linked list
- */
-void free_list(ll *head)
-{
-	ll *ptr = NULL;
-
-	while (head)
-	{
-		ptr = head->next;
-		free(head);
-		head = ptr;
-	}
+	if (tree == NULL)
+		return (0);
+	left_height = binary_tree_height(tree->left);
+	right_height = binary_tree_height(tree->right);
+	if (left_height > right_height)
+		return (left_height + 1);
+	else
+		return (right_height + 1);
 }
